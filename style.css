@@ -191,7 +191,7 @@ body{
 } 
 
 /* Responsive Design */
- @media only screen and (max-width: 768px) {
+  @media only screen and (max-width: 768px) {
     .container {
         padding: 20px;
     }
@@ -279,16 +279,5 @@ body{
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+ 
  
