@@ -9,22 +9,28 @@ const descriptionElement = document.querySelector('.description');
 const locationElement = document.querySelector('.location');
 const loadingSpinner = document.querySelector('.loading-spinner');
 const apiKey = '82005d27a116c2880c8f0fcb866998a0';
-
 const weatherIcons = {
-    Clear: '01d.png',
-    Clouds: '04d.png',
-    Rain: '09d.png',
-    Drizzle: '10d.png',
-    Thunderstorm: '11d.png',
-    Snow: '13d.png',
-    Mist: '50d.png',
-    Smoke: '10n.png',
-    Haze: '02d.png',
-    Fog: '09n.png',
-    Sand: '02n.png',
-    Ash: '03d.png',
-    Squall: 'unknown.png',
+    '01d': '01d.png',
+    '02d': '02d.png',
+    '03d': '03d.png',
+    '04d': '04d.png',
+    '09d': '09d.png',
+    '10d': '10d.png',
+    '11d': '11d.png',
+    '13d': '13d.png',
+    '50d': '50d.png',
+    '01n': '01n.png',
+    '02n': '02n.png',
+    '03n': '03n.png',
+    '04n': '04n.png',
+    '09n': '09n.png',
+    '10n': '10n.png',
+    '11n': '11n.png',
+    '13n': '13n.png',
+    '50n': '50n.png',
 };
+
+
 
 const BASE_URL = `https://api.openweathermap.org/data/2.5`;
 
@@ -127,9 +133,11 @@ function weatherInformation() {
 }
 
 const detailValueElements = weatherInformation();
+
 function displayWeatherData(data) {
     errorMessage.style.display = 'none';
     weatherInfo.style.display = 'block';
+
     if (data.main && data.weather && data.weather[0]) {
         temperatureElement.textContent = `${Math.round(data.main.temp)}°C`;
         descriptionElement.textContent = data.weather[0].description;
@@ -140,35 +148,35 @@ function displayWeatherData(data) {
         detailValueElements.feelslike.textContent = `${Math.round(data.main.feels_like)}°C`;
         detailValueElements.pressure.textContent = `${data.main.pressure} hPa`;
 
-        const weatherCondition = data.weather[0].main;
-        const iconFilename = weatherIcons[weatherCondition] || 'default.png';
-        weatherIcon.src = `${iconFilename}`;
-        weatherIcon.alt = weatherCondition;
+        const weatherIconCode = data.weather[0].icon;  
+
+        const iconFilename = weatherIcons[weatherIconCode] || 'default.png';  
+        weatherIcon.src = iconFilename;  
+        weatherIcon.alt = weatherIconCode; 
 
         const sunrise = new Date(data.sys.sunrise * 1000);
         const sunset = new Date(data.sys.sunset * 1000);
         const now = new Date();
 
         if (now >= sunrise && now <= sunset) {
-             document.body.style.backgroundImage = "url('./sun-rise.jpg')" 
-           
+            document.body.style.backgroundImage = "url('./sun-rise.jpg')";
         } else {
             document.body.style.backgroundImage = "url('./moon.jpg')";
         }
+
         document.body.style.backgroundSize = "cover";
     } else {
         console.error('Incomplete weather data:', data);
         errorMessage.textContent = 'Weather data is missing or incomplete.';
         errorMessage.style.display = 'block';
-        loadingSpinner.style.display = 'none';
-    }
+      loadingSpinner.style.display = 'none';
+  }
 }
+
 searchButton.addEventListener('click', function () {
     const city = searchInput.value;
-
     weatherInfo.style.display = 'none';
     errorMessage.style.display = 'none';
-
     loadingSpinner.style.display = 'block';
     if (city.trim() === '') {
         errorMessage.textContent = ' Enter a city name.';
@@ -176,7 +184,6 @@ searchButton.addEventListener('click', function () {
         loadingSpinner.style.display = 'none';
         return;
     }
-
     loadingSpinner.style.display = 'block';
     fetchData('weather', city);
     // Clear the search input field after the search button is clicked
@@ -238,7 +245,7 @@ function fetchHourlyForecastByCoordinates(lat, lon) {
             console.error('Error fetching forecast data by coordinates:', error);
             errorMessage.textContent = 'Unable to fetch forecast data. Please try again later.';
             errorMessage.style.display = 'block';
-        });
+                });
 }
 function displayHourlyForecast(data) {
     const forecastModal = document.getElementById('forecastModal');
@@ -246,14 +253,8 @@ function displayHourlyForecast(data) {
     const chartCanvas = document.getElementById('hourlyForecastChart');
     const tableBody = document.getElementById('forecastTableBody');
 
-    tableBody.innerHTML = '';
-
-    if (window.hourlyForecastChart && typeof window.hourlyForecastChart.destroy === 'function') {
-        window.hourlyForecastChart.destroy();
-        window.hourlyForecastChart = null;
-    }
-
-    // Check if the canvas element exists
+    tableBody.innerHTML = ''; // Clear existing forecast table
+     // Check if the canvas element exists
     if (!chartCanvas) {
         console.error("Chart canvas element not found.");
         return;
@@ -334,37 +335,21 @@ function displayHourlyForecast(data) {
         },
     });
 
-    // Prepare Table Data (Daily Forecast)
-    const forecastDays = {};
-    let dayCount = 0;
-
-    data.list.forEach(item => {
+    hourlyData.forEach(item => {
         const date = new Date(item.dt * 1000);
-        const dayString = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        const dayString = date.toLocaleTimeString([], { hour: '2-digit' });
 
-        if (dayCount < 8 && !forecastDays[dayString]) {
-            forecastDays[dayString] = {
-                temp: Math.round(item.main.temp),
-                icon: weatherIcons[item.weather[0].main] || 'default.png',
-                description: item.weather[0].description || "No description available"
-            };
-            dayCount++;
-        }
-    });
+        const weatherIconCode = item.weather[0].icon;
+        const iconFilename = weatherIcons[weatherIconCode] || 'default.png';  
 
-    // Add forecast data to the table
-    Object.keys(forecastDays).forEach(day => {
-        const dayData = forecastDays[day];
-        console.log(dayData);
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${day}</td>
-            <td class="forecast-icon"><img src="${dayData.icon}" alt="Weather icon" >${dayData.temp}°C</td>
-            <td>${dayData.description}</td>
+            <td>${dayString}</td>
+            <td class="forecast-icon"><img src="${iconFilename}" alt="Weather icon">${Math.round(item.main.temp)}°C</td>
+            <td>${item.weather[0].description}</td>
         `;
         tableBody.appendChild(row);
     });
-
     if (forecastModal && modalBackdrop) {
         forecastModal.style.display = 'block';
         modalBackdrop.style.display = 'block';
@@ -377,13 +362,11 @@ function displayHourlyForecast(data) {
         modalBackdrop.style.display = 'none';
     });
 }
-
 searchInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         searchButton.click();
     }
 })
-
 function fetchWeatherByCoordinates(lat, lon) {
     fetch(`${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
         .then(response => {
@@ -411,7 +394,6 @@ function fetchWeatherByCoordinates(lat, lon) {
         });
 }
 
-
 function getCoordinates() {
     return new Promise((resolve, reject) => {
         if (navigator.geolocation) {
@@ -432,7 +414,6 @@ function getCoordinates() {
         }
     });
 }
-
 function getCurrentLocationWeather() {
     loadingSpinner.style.display = 'block';
     getCoordinates()
@@ -448,7 +429,6 @@ function getCurrentLocationWeather() {
             loadingSpinner.style.display = 'none';
         });
 }
-
 window.onload = function () {
     getCurrentLocationWeather();
 };
