@@ -1,6 +1,5 @@
 <!DOCTYPE html>
   <html lang="en">
-  
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,14 +9,12 @@
       integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
       crossorigin="anonymous" referrerpolicy="no-referrer" />
   </head>
-  
   <body>
     <div class="weather-container">
       <div class="search-container">
         <input type="text" class="search-input" placeholder="Search city" />
         <button class="search-button"><i class="fa-sharp fa-solid fa-magnifying-glass"></i></button>
       </div>
-  
       <div class="weather-info">
         <h4 class="weather-heading">Weather</h4>
         <div class="icon-list">
@@ -33,25 +30,6 @@
       <div class="loading-spinner" style="display: none;">
         <i class="fa-solid fa-spinner"></i>
       </div>
-  
-      <div class="modal-backdrop" id="modalBackdrop"></div>
-      <div class="forecast-modal" id="forecastModal">
-        <div class="forecast-content">
-         
-          <div class="chart-container">
-            <h2>Hourly forecast</h2>
-            <canvas id="hourlyForecastChart"></canvas>
-          </div>
-         
-          <div class="table-container">
-            <h2>6 days forecast</h2>
-            <table class="forecast-table">
-              <tbody id="forecastTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-  
       <div class="error-message" style="display: none;"> </div>
     </div>
     </div>
