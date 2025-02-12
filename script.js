@@ -10,6 +10,9 @@ const loadingSpinner = document.querySelector('.loading-spinner');
 const apiKey = '82005d27a116c2880c8f0fcb866998a0';
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
+const forecastBtn = document.querySelector(".forecast-btn")
+
+
 // Variable to store the last searched city and its data
 let lastSearchedCity = '';
 let lastSearchedData = null;
@@ -57,6 +60,8 @@ const detailValueElements = weatherInformation();
 function displayWeatherData(data) {
     errorMessage.style.display = 'none';
     weatherInfo.style.display = 'block';
+
+
     if (data.main && data.weather && data.weather[0]) {
         temperatureElement.textContent = `${Math.round(data.main.temp)}°C`;
         descriptionElement.textContent = data.weather[0].description;
@@ -82,6 +87,7 @@ function displayWeatherData(data) {
         // Set background image
         document.body.style.backgroundImage = `url('${backgroundImage}')`;
         document.body.style.backgroundSize = 'cover';
+        forecastBtn.style.display = 'block';  //  button is visible
     } else {
         console.error('Incomplete weather data:', data);
         errorMessage.textContent = 'Weather data is missing or incomplete.';
@@ -160,6 +166,7 @@ function fetchWeatherByCoordinates(lat, lon) {
                 errorMessage.textContent = 'Weather data is missing or incomplete.';
                 errorMessage.style.display = 'block';
                 loadingSpinner.style.display = 'none';
+                
             }
         })
         .catch(error => {
@@ -167,6 +174,7 @@ function fetchWeatherByCoordinates(lat, lon) {
             errorMessage.textContent = 'Unable to fetch weather data. Please try again later.';
             errorMessage.style.display = 'block';
             loadingSpinner.style.display = 'none';
+           
         });
 }
 // Function to get coordinates using the browser's geolocation API
@@ -206,3 +214,82 @@ function getCurrentLocationWeather() {
 window.onload = function () {
     getCurrentLocationWeather();
 };
+
+//========   for-Forecast   ==================
+const forecastGraphContainer = document.querySelector('.forecast-graph-container');
+const forecastChartCanvas = document.getElementById('forecast-chart').getContext('2d');
+
+// Function to fetch 5-day forecast data
+function fetch5DayForecast(city) {
+    fetch(`${BASE_URL}/forecast?q=${city}&appid=${apiKey}&units=metric`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Forecast data not found');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const dates = [];
+            const temperatures = [];
+            data.list.forEach((entry) => {
+                const date = new Date(entry.dt * 1000);
+                if (date.getHours() === 12) { 
+                    dates.push(`${date.getDate()}/${date.getMonth() + 1}`);
+                    temperatures.push(Math.round(entry.main.temp));
+                }
+            });
+            plotForecastChart(dates, temperatures);
+
+        })
+        .catch((error) => {
+            console.error('Error fetching forecast data:', error);
+        });
+}
+function plotForecastChart(dates, temperatures) {
+    forecastGraphContainer.style.display = 'block';
+    new Chart(forecastChartCanvas, {
+        type: 'line', // Line chart
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Temperature (°C)',
+                data: temperatures,
+                borderColor: '#FF5733',
+                backgroundColor: 'rgba(255, 87, 51, 0.3)',
+                fill: true,
+                lineTension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#FF5733',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        stepSize: 5,
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Event listener for the forecast button
+forecastBtn.addEventListener('click', () => {
+    const city = searchInput.value.trim(); 
+    if (city !== '') {
+        fetch5DayForecast(city);
+    } 
+});
+
+

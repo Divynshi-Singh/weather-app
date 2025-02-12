@@ -1,4 +1,4 @@
-* {
+  *{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -174,3 +174,47 @@ img {
         width: 300px;
     }
 }
+
+
+  
+  /* Forecast container styling */
+  .forecast-container {
+    text-align: center;
+    padding: 20px;
+    border-radius: 10px;
+    margin: auto;
+  }
+  
+  /* Button styling */
+  .forecast-btn {
+    background-color: #021f3e; 
+    color: #fff; /* White text */
+    font-size: 16px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    display: none;
+  }
+  
+  /* Button hover effects */
+  .forecast-btn:hover {
+    background-color: #06488d;
+    transform: translateY(-3px); 
+  }
+ 
+
+
+  .forecast-graph-container {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  #forecast-chart {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+

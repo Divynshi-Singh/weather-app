@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
   <html lang="en">
   <head>
     <meta charset="UTF-8">
@@ -30,7 +30,14 @@
       <div class="loading-spinner" style="display: none;">
         <i class="fa-solid fa-spinner"></i>
       </div>
-      <div class="error-message" style="display: none;"> </div>
+<div class="forecast-container">
+  <button class="forecast-btn">Forecast</button>
+  <!-- Canvas for 5-Day Forecast Chart -->
+  <div class="forecast-graph-container" style="display:none;">
+    <canvas id="forecast-chart" width="400" height="200"></canvas>
+  </div>
+</div>
+      <div class="error-message" style="display: none;"> </div>   
     </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -38,4 +45,13 @@
     <script src="script.js"></script>
   </body>
   
-  </html>
+  </html> 
+
+  
+
+
+
+
+
+  
+
