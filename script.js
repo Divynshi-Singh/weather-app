@@ -17,9 +17,9 @@ function weatherInformation() {
     const weatherDetailsContainer = document.querySelector('.weather-details');
     const details = [
         { icon: 'fa-solid fa-wind', label: 'Wind Speed', value: '--' },
-        { icon: './icons/humidity.png', label: 'Humidity', value: '--', isImage: true },
-        { icon: './icons/feels-like.jpg', label: 'Feels Like', value: '--', isImage: true },
-        { icon: './icons/pres-icons.png', label: 'Pressure', value: '--', isImage: true },
+        { icon: './images/icons/humidity.png', label: 'Humidity', value: '--', isImage: true },
+        { icon: './images/icons/feels-like.jpg', label: 'Feels Like', value: '--', isImage: true },
+        { icon: './images/icons/pres-icons.png', label: 'Pressure', value: '--', isImage: true },
     ];
     const valueContainers = {};
     details.forEach(detail => {
@@ -65,7 +65,7 @@ function displayWeatherData(data) {
         detailValueElements.humidity.textContent = `${data.main.humidity}%`;
         detailValueElements.feelslike.textContent = `${Math.round(data.main.feels_like)}°C`;
         detailValueElements.pressure.textContent = `${data.main.pressure} hPa`;
-        const iconFilename = `./icons/${data.weather[0].icon}.png`;
+        const iconFilename = `./images/icons/${data.weather[0].icon}.png`;
         const fallbackIcon = './default.png';
         const iconImage = new Image();
         iconImage.src = iconFilename;
@@ -77,7 +77,7 @@ function displayWeatherData(data) {
         const now = new Date();
 
         const isDaytime = now >= sunrise && now <= sunset;
-        const backgroundImage = isDaytime ? './icons/sun-rise.jpg' : './icons/moon.jpg';
+        const backgroundImage = isDaytime ? './images/bg-img/sun-rise.jpg' : './images/bg-img/moon.jpg';
 
         // Set background image
         document.body.style.backgroundImage = `url('${backgroundImage}')`;
