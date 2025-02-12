@@ -10,28 +10,8 @@ const loadingSpinner = document.querySelector('.loading-spinner');
 const apiKey = '82005d27a116c2880c8f0fcb866998a0';
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
-const weatherIcons = {
-    '01d': '01d.png',
-    '02d': '02d.png',
-    '03d': '03d.png',
-    '04d': '04d.png',
-    '09d': '09d.png',
-    '10d': '10d.png',
-    '11d': '11d.png',
-    '13d': '13d.png',
-    '50d': '50d.png',
-    '01n': '01n.png',
-    '02n': '02n.png',
-    '03n': '03n.png',
-    '04n': '04n.png',
-    '09n': '09n.png',
-    '10n': '10n.png',
-    '11n': '11n.png',
-    '13n': '13n.png',
-    '50n': '50n.png',
-};
 function weatherInformation() {
-    const weatherDetailsContainer = document.querySelector('.weather-details');
+const weatherDetailsContainer = document.querySelector('.weather-details');
     const details = [
         { icon: 'fa-solid fa-wind', label: 'Wind Speed', value: '--' },
         { icon: './humidity.png', label: 'Humidity', value: '--', isImage: true },
@@ -72,10 +52,10 @@ function weatherInformation() {
 
         valueContainers[detail.label.toLowerCase().replace(' ', '')] = valueContainer;
     });
-
     return valueContainers;
 }
 const detailValueElements = weatherInformation();
+
 function displayWeatherData(data) {
     errorMessage.style.display = 'none';
     weatherInfo.style.display = 'block';
@@ -87,10 +67,13 @@ function displayWeatherData(data) {
         detailValueElements.humidity.textContent = `${data.main.humidity}%`;
         detailValueElements.feelslike.textContent = `${Math.round(data.main.feels_like)}°C`;
         detailValueElements.pressure.textContent = `${data.main.pressure} hPa`;
+
+        // Remove weatherIcons object and directly build the URL
         const weatherIconCode = data.weather[0].icon;
-        const iconFilename = weatherIcons[weatherIconCode] || 'default.png';
+        const iconFilename = `./${weatherIconCode}.png`;
         weatherIcon.src = iconFilename;
         weatherIcon.alt = weatherIconCode;
+
         const sunrise = new Date(data.sys.sunrise * 1000);
         const sunset = new Date(data.sys.sunset * 1000);
         const now = new Date();
@@ -107,6 +90,7 @@ function displayWeatherData(data) {
         loadingSpinner.style.display = 'none';
     }
 }
+
 searchButton.addEventListener('click', function () {
     const city = searchInput.value;
     weatherInfo.style.display = 'none';
@@ -212,6 +196,3 @@ function getCurrentLocationWeather() {
 window.onload = function () {
     getCurrentLocationWeather();
 };
-
-
-
