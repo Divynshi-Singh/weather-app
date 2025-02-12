@@ -10,8 +10,12 @@ const loadingSpinner = document.querySelector('.loading-spinner');
 const apiKey = '82005d27a116c2880c8f0fcb866998a0';
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
+// Variable to store the last searched city and its data
+let lastSearchedCity = '';
+let lastSearchedData = null;
+
 function weatherInformation() {
-const weatherDetailsContainer = document.querySelector('.weather-details');
+    const weatherDetailsContainer = document.querySelector('.weather-details');
     const details = [
         { icon: 'fa-solid fa-wind', label: 'Wind Speed', value: '--' },
         { icon: './humidity.png', label: 'Humidity', value: '--', isImage: true },
@@ -47,9 +51,7 @@ const weatherDetailsContainer = document.querySelector('.weather-details');
         detailContainer.appendChild(iconContainer);
         detailContainer.appendChild(valueContainer);
         detailContainer.appendChild(labelContainer);
-
         weatherDetailsContainer.appendChild(detailContainer);
-
         valueContainers[detail.label.toLowerCase().replace(' ', '')] = valueContainer;
     });
     return valueContainers;
@@ -68,21 +70,30 @@ function displayWeatherData(data) {
         detailValueElements.feelslike.textContent = `${Math.round(data.main.feels_like)}°C`;
         detailValueElements.pressure.textContent = `${data.main.pressure} hPa`;
 
-        // Remove weatherIcons object and directly build the URL
-        const weatherIconCode = data.weather[0].icon;
-        const iconFilename = `./${weatherIconCode}.png`;
-        weatherIcon.src = iconFilename;
-        weatherIcon.alt = weatherIconCode;
+        const iconFilename = `./${data.weather[0].icon}.png`;
+        const fallbackIcon = './default.png';
+        const iconImage = new Image();
+        iconImage.src = iconFilename;
+        iconImage.onload = () => weatherIcon.src = iconFilename;
+        iconImage.onerror = () => weatherIcon.src = fallbackIcon;
+        weatherIcon.alt = data.weather[0].icon;
 
         const sunrise = new Date(data.sys.sunrise * 1000);
         const sunset = new Date(data.sys.sunset * 1000);
         const now = new Date();
-        if (now >= sunrise && now <= sunset) {
-            document.body.style.backgroundImage = "url('./sun-rise.jpg')";
-        } else {
-            document.body.style.backgroundImage = "url('./moon.jpg')";
-        }
-        document.body.style.backgroundSize = "cover";
+
+        // Debugging the time and background image logic
+        console.log('Sunrise:', sunrise);
+        console.log('Sunset:', sunset);
+        console.log('Now:', now);
+        const isDaytime = now >= sunrise && now <= sunset;
+        console.log('Is it daytime?', isDaytime);
+        const backgroundImage = isDaytime ? './sun-rise.jpg' : './moon.jpg';
+        console.log('Setting back image', backgroundImage);
+        
+        // Set background image
+        document.body.style.backgroundImage = `url('${backgroundImage}')`;
+        document.body.style.backgroundSize = 'cover';
     } else {
         console.error('Incomplete weather data:', data);
         errorMessage.textContent = 'Weather data is missing or incomplete.';
@@ -90,48 +101,61 @@ function displayWeatherData(data) {
         loadingSpinner.style.display = 'none';
     }
 }
-
-searchButton.addEventListener('click', function () {
-    const city = searchInput.value;
+// Function to fetch data from the weather API
+function fetchData(endPoint, city) {
+    fetch(`${BASE_URL}/${endPoint}?q=${city}&appid=${apiKey}&units=metric`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('City not found');
+            }
+            return response.json();
+        })
+        .then(data => {
+            lastSearchedCity = city; // Update the last searched city
+            lastSearchedData = data; // Store the fetched data
+            displayWeatherData(data);
+            loadingSpinner.style.display = 'none';
+        })
+        .catch((error) => {
+            console.error('Error fetching weather data:', error);
+            errorMessage.textContent = 'city is not found';
+            errorMessage.style.display = 'block';
+            loadingSpinner.style.display = 'none';
+        });
+}
+// Event listener for the search button click
+searchButton.addEventListener('click', function (event) {
+    event.preventDefault(); // Prevents form from submitting and page from refreshing
+    const city = searchInput.value.trim();
     weatherInfo.style.display = 'none';
     errorMessage.style.display = 'none';
     loadingSpinner.style.display = 'block';
-    if (city.trim() === '') {
+
+    if (city === '') {
         errorMessage.textContent = 'Enter a city name.';
         errorMessage.style.display = 'block';
         loadingSpinner.style.display = 'none';
         return;
     }
+    if (city === lastSearchedCity) {
+        weatherInfo.style.display = 'block'; 
+        displayWeatherData(lastSearchedData); 
+        loadingSpinner.style.display = 'none';
+        console.log('City is already searched. Using cached data.');  
+    }else{
+    
     loadingSpinner.style.display = 'block';
     fetchData('weather', city);
-    searchInput.value = '';
+    }
+    searchInput.value = '';  // Clear the input field
 });
 
-function fetchData(endPoint, city) {
-    fetch(`${BASE_URL}/${endPoint}?q=${city}&appid=${apiKey}&units=metric`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(' not found');
-            }
-            return response.json();
-        })
-        .then(data => {
-            displayWeatherData(data);
-            console.log(data);
-            loadingSpinner.style.display = 'none';
-        })
-        .catch((error) => {
-            console.error('Error fetching weather data:', error);
-            errorMessage.textContent = 'City not found.';
-            errorMessage.style.display = 'block';
-            loadingSpinner.style.display = 'none';
-        });
-}
 searchInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         searchButton.click();
     }
 });
+// Function to fetch weather data by coordinates
 function fetchWeatherByCoordinates(lat, lon) {
     fetch(`${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
         .then(response => {
@@ -153,11 +177,12 @@ function fetchWeatherByCoordinates(lat, lon) {
         })
         .catch(error => {
             console.error('Error fetching weather data by coordinates:', error);
-            errorMessage.textContent = 'Unable to fetch weather data Please try again later.';
+            errorMessage.textContent = 'Unable to fetch weather data. Please try again later.';
             errorMessage.style.display = 'block';
             loadingSpinner.style.display = 'none';
-     });
+        });
 }
+// Function to get coordinates using the browser's geolocation API
 function getCoordinates() {
     return new Promise((resolve, reject) => {
         if (navigator.geolocation) {
@@ -170,14 +195,15 @@ function getCoordinates() {
                 },
                 error => {
                     console.error('Error getting geolocation:', error);
-                    reject(new Error('Unable to retrieve your location. Please try again'));
+                    reject(new Error('Unable to retrieve your location. Please try again.'));
                 }
             );
         } else {
-            reject(new Error('Geolocation is not support by this browser.'));
+            reject(new Error('Geolocation is not supported by this browser.'));
         }
     });
 }
+// Function to fetch weather data for the current location
 function getCurrentLocationWeather() {
     loadingSpinner.style.display = 'block';
     getCoordinates()
@@ -195,4 +221,4 @@ function getCurrentLocationWeather() {
 }
 window.onload = function () {
     getCurrentLocationWeather();
-};
+}
