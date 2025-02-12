@@ -13,7 +13,6 @@ const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 // Variable to store the last searched city and its data
 let lastSearchedCity = '';
 let lastSearchedData = null;
-
 function weatherInformation() {
     const weatherDetailsContainer = document.querySelector('.weather-details');
     const details = [
@@ -26,10 +25,8 @@ function weatherInformation() {
     details.forEach(detail => {
         const detailContainer = document.createElement('div');
         detailContainer.classList.add('weather-detail');
-
         const iconContainer = document.createElement('div');
         iconContainer.classList.add('detail-icon');
-
         if (detail.isImage) {
             const iconImage = document.createElement('img');
             iconImage.src = detail.icon;
@@ -57,7 +54,6 @@ function weatherInformation() {
     return valueContainers;
 }
 const detailValueElements = weatherInformation();
-
 function displayWeatherData(data) {
     errorMessage.style.display = 'none';
     weatherInfo.style.display = 'block';
@@ -69,7 +65,6 @@ function displayWeatherData(data) {
         detailValueElements.humidity.textContent = `${data.main.humidity}%`;
         detailValueElements.feelslike.textContent = `${Math.round(data.main.feels_like)}°C`;
         detailValueElements.pressure.textContent = `${data.main.pressure} hPa`;
-
         const iconFilename = `./${data.weather[0].icon}.png`;
         const fallbackIcon = './default.png';
         const iconImage = new Image();
@@ -77,20 +72,13 @@ function displayWeatherData(data) {
         iconImage.onload = () => weatherIcon.src = iconFilename;
         iconImage.onerror = () => weatherIcon.src = fallbackIcon;
         weatherIcon.alt = data.weather[0].icon;
-
         const sunrise = new Date(data.sys.sunrise * 1000);
         const sunset = new Date(data.sys.sunset * 1000);
         const now = new Date();
 
-        // Debugging the time and background image logic
-        console.log('Sunrise:', sunrise);
-        console.log('Sunset:', sunset);
-        console.log('Now:', now);
         const isDaytime = now >= sunrise && now <= sunset;
-        console.log('Is it daytime?', isDaytime);
         const backgroundImage = isDaytime ? './sun-rise.jpg' : './moon.jpg';
-        console.log('Setting back image', backgroundImage);
-        
+
         // Set background image
         document.body.style.backgroundImage = `url('${backgroundImage}')`;
         document.body.style.backgroundSize = 'cover';
@@ -118,7 +106,7 @@ function fetchData(endPoint, city) {
         })
         .catch((error) => {
             console.error('Error fetching weather data:', error);
-            errorMessage.textContent = 'city is not found';
+            errorMessage.textContent = 'City not found';
             errorMessage.style.display = 'block';
             loadingSpinner.style.display = 'none';
         });
@@ -137,19 +125,19 @@ searchButton.addEventListener('click', function (event) {
         loadingSpinner.style.display = 'none';
         return;
     }
-    if (city === lastSearchedCity) {
-        weatherInfo.style.display = 'block'; 
-        displayWeatherData(lastSearchedData); 
+    const normalizedCity = city.toLowerCase();
+
+    if (normalizedCity === lastSearchedCity.toLowerCase()) {
+        weatherInfo.style.display = 'block';
+        displayWeatherData(lastSearchedData);
         loadingSpinner.style.display = 'none';
-        console.log('City is already searched. Using cached data.');  
-    }else{
-    
-    loadingSpinner.style.display = 'block';
-    fetchData('weather', city);
+        console.log('City is already searched. Using cached data.');
+    } else {
+        loadingSpinner.style.display = 'block';
+        fetchData('weather', city);
     }
     searchInput.value = '';  // Clear the input field
 });
-
 searchInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         searchButton.click();
@@ -165,7 +153,6 @@ function fetchWeatherByCoordinates(lat, lon) {
             return response.json();
         })
         .then(data => {
-            console.log(data);
             if (data.main && data.weather && data.weather[0]) {
                 displayWeatherData(data);
             } else {
@@ -190,11 +177,9 @@ function getCoordinates() {
                 position => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    console.log('Current position:', lat, lon);
                     resolve({ lat, lon });
                 },
                 error => {
-                    console.error('Error getting geolocation:', error);
                     reject(new Error('Unable to retrieve your location. Please try again.'));
                 }
             );
@@ -211,7 +196,6 @@ function getCurrentLocationWeather() {
             fetchWeatherByCoordinates(lat, lon);
         })
         .catch(error => {
-            console.error(error.message);
             errorMessage.textContent = error.message;
             errorMessage.style.display = 'block';
         })
@@ -221,4 +205,4 @@ function getCurrentLocationWeather() {
 }
 window.onload = function () {
     getCurrentLocationWeather();
-}
+};

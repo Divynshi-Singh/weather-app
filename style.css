@@ -12,7 +12,6 @@ body {
     height: 100vh;
     margin: 0;
 }
-
 .weather-container {
     display: flex;
     flex-direction: column;
@@ -24,12 +23,10 @@ body {
     width: 400px;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
 }
-
 .search-container {
     display: flex;
     justify-content: center;
 }
-
 .search-input {
     padding: 8px 12px;
     font-size: 14px;
@@ -37,7 +34,7 @@ body {
     border-top-left-radius: 2px;
     border-bottom-left-radius: 3px;
     border: 1px solid #2d527a;
-    background-color: rgb(242, 235, 235);
+   background-color: rgb(242, 235, 235);
 }
 .search-button {
     padding: 8px 12px;
@@ -49,10 +46,12 @@ body {
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
 }
+
 .search-button:hover {
     background-color: #0551a2;
     color: white;
 }
+
 .weather-info {
     display: none;
     flex-direction: column;
@@ -71,9 +70,11 @@ body {
     height: 80px;
 
 }
+
 .weather-heading {
     font-size: 25px;
     text-align: center;
+    margin: 10px;
 }
 
 .temperature {
@@ -86,11 +87,13 @@ body {
 span {
     font-size: 30px;
 }
+
 .description {
     font-size: 18px;
     margin-top: 3px;
     text-align: center;
 }
+
 .location {
     font-size: 16px;
     margin-top: 5px;
@@ -128,17 +131,21 @@ span {
     font-size: 18px;
     font-weight: bold;
 }
+
 .detail-label {
     font-size: 14px;
     color: #ffff;
 }
+
 .detail-icon {
     font-size: 23px;
     height: 35px;
 }
+
 img {
     height: 30px;
 }
+
 .error-message {
     color: rgb(198, 130, 130);
     font-size: 16px;
@@ -146,17 +153,24 @@ img {
     margin-top: 10px;
 }
 .loading-spinner i {
-    font-size: 20px; 
-    animation: spin 1s linear infinite; 
+    font-size: 20px;
+    animation: spin 1s linear infinite;
     margin-top: 5px;
 }
+
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
+
 @media (max-width:450px) {
 
     .weather-container {
         width: 300px;
-    }   
-} 
+    }
+}
