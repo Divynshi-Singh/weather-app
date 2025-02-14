@@ -1,12 +1,13 @@
-const searchInput = document.querySelector('.search-input');
-const searchButton = document.querySelector('.search-button');
-const weatherInfo = document.querySelector('.weather-info');
-const errorMessage = document.querySelector('.error-message');
-const weatherIcon = document.querySelector('.weather-icon');
-const temperatureElement = document.querySelector('.temperature');
-const descriptionElement = document.querySelector('.description');
-const locationElement = document.querySelector('.location');
-const loadingSpinner = document.querySelector('.loading-spinner');
+const searchInput = document.getElementsByClassName('search-input')[0]
+const searchButton = document.getElementsByClassName('search-button')[0];
+const weatherInfo = document.getElementsByClassName('weather-info')[0];
+const errorMessage = document.getElementsByClassName('error-message')[0];
+const weatherIcon = document.getElementsByClassName('weather-icon')[0];
+const temperatureElement = document.getElementsByClassName('temperature')[0];
+const descriptionElement = document.getElementsByClassName('description')[0];
+const locationElement = document.getElementsByClassName('location')[0];
+const loadingSpinner = document.getElementsByClassName('loading-spinner')[0];
+
 const apiKey = '82005d27a116c2880c8f0fcb866998a0';
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
@@ -93,29 +94,28 @@ function displayWeatherData(data) {
         loadingSpinner.style.display = 'none';
     }
 }
-// Function to fetch weather data from the API
-function fetchData(endPoint, city) {
-    fetch(`${BASE_URL}/${endPoint}?q=${city}&appid=${apiKey}&units=metric`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('City not found');
-            }
-            return response.json();
-        })
-        .then(data => {
-            lastSearchedCity = city;
-            lastSearchedData = data;
-            displayWeatherData(data);
-            loadingSpinner.style.display = 'none';
-        })
-        .catch((error) => {
-            console.error('Error fetching weather data:', error);
-            errorMessage.textContent = 'City not found';
-            forecastButton.style.display = "none";
-            errorMessage.style.display = 'block';
-            loadingSpinner.style.display = 'none';
-            document.body.style.backgroundImage = ''; // Remove background image
-        });
+
+async function fetchData(endPoint, city) {
+    try {
+        
+        const response = await fetch(`${BASE_URL}/${endPoint}?q=${city}&appid=${apiKey}&units=metric`);
+        if (!response.ok) {
+            throw new Error('City not found');
+        }
+        const data = await response.json();
+        lastSearchedCity = city;
+        lastSearchedData = data;
+        displayWeatherData(data);
+        loadingSpinner.style.display = 'none';
+
+    } catch (error) {
+        console.error('Error fetching weather data:', error);
+        errorMessage.textContent = 'City not found';
+        forecastButton.style.display = "none";
+        errorMessage.style.display = 'block';
+        loadingSpinner.style.display = 'none';
+        document.body.style.backgroundImage = ''; 
+    }
 }
 // Event listener for the search button click
 searchButton.addEventListener('click', function (event) {
