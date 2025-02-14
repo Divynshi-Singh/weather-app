@@ -152,7 +152,6 @@ const forecastButton = document.querySelector('.forecast-button');
 const forecastModal = document.getElementById('forecastModal');
 const closeModal = document.querySelector('.close');
 const ctx = document.getElementById('forecastChart').getContext('2d');
-
 forecastButton.addEventListener('click', function () {
     forecastModal.style.display = 'flex';
     fetch(`${BASE_URL}/forecast?q=${lastSearchedCity}&appid=${apiKey}&units=metric`)
@@ -291,8 +290,6 @@ forecastButton.addEventListener("click", function () {
     fetchForecast(cityToUse);
     forecastModal.style.display = 'flex';
 });
-
-
 window.onload = function () {
     getCurrentLocationWeather();
 };
