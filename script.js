@@ -97,7 +97,7 @@ function displayWeatherData(data) {
 
 async function fetchData(endPoint, city) {
     try {
-        
+
         const response = await fetch(`${BASE_URL}/${endPoint}?q=${city}&appid=${apiKey}&units=metric`);
         if (!response.ok) {
             throw new Error('City not found');
@@ -114,7 +114,7 @@ async function fetchData(endPoint, city) {
         forecastButton.style.display = "none";
         errorMessage.style.display = 'block';
         loadingSpinner.style.display = 'none';
-        document.body.style.backgroundImage = ''; 
+        document.body.style.backgroundImage = '';
     }
 }
 // Event listener for the search button click
@@ -220,7 +220,7 @@ function fetchForecast(city) {
                     scales: {
                         y: { beginAtZero: false }
                     },
-                    
+
                 }
             });
         })
@@ -282,7 +282,7 @@ function getCurrentLocationWeather() {
         });
 }
 forecastButton.addEventListener("click", function () {
-    const cityToUse = lastSearchedCity || currentLocationCity; 
+    const cityToUse = lastSearchedCity || currentLocationCity;
     if (!cityToUse) {
         alert("Weather data not available. Please allow location or search for a city.");
         return;
