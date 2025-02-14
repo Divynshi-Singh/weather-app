@@ -10,12 +10,11 @@ const loadingSpinner = document.querySelector('.loading-spinner');
 const apiKey = '82005d27a116c2880c8f0fcb866998a0';
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
-const forecastBtn = document.querySelector(".forecast-btn")
-
-
 // Variable to store the last searched city and its data
 let lastSearchedCity = '';
 let lastSearchedData = null;
+
+// Function to generate weather details section
 function weatherInformation() {
     const weatherDetailsContainer = document.querySelector('.weather-details');
     const details = [
@@ -28,6 +27,7 @@ function weatherInformation() {
     details.forEach(detail => {
         const detailContainer = document.createElement('div');
         detailContainer.classList.add('weather-detail');
+
         const iconContainer = document.createElement('div');
         iconContainer.classList.add('detail-icon');
         if (detail.isImage) {
@@ -43,25 +43,25 @@ function weatherInformation() {
         const valueContainer = document.createElement('div');
         valueContainer.classList.add('detail-value');
         valueContainer.textContent = detail.value;
-
         const labelContainer = document.createElement('div');
         labelContainer.classList.add('detail-label');
         labelContainer.textContent = detail.label;
-
         detailContainer.appendChild(iconContainer);
         detailContainer.appendChild(valueContainer);
         detailContainer.appendChild(labelContainer);
         weatherDetailsContainer.appendChild(detailContainer);
+
         valueContainers[detail.label.toLowerCase().replace(' ', '')] = valueContainer;
     });
     return valueContainers;
 }
 const detailValueElements = weatherInformation();
+
+// Function to display weather data
 function displayWeatherData(data) {
     errorMessage.style.display = 'none';
     weatherInfo.style.display = 'block';
-
-
+    forecastButton.style.display = 'block'; // Show the forecast button
     if (data.main && data.weather && data.weather[0]) {
         temperatureElement.textContent = `${Math.round(data.main.temp)}°C`;
         descriptionElement.textContent = data.weather[0].description;
@@ -76,18 +76,16 @@ function displayWeatherData(data) {
         iconImage.src = iconFilename;
         iconImage.onload = () => weatherIcon.src = iconFilename;
         iconImage.onerror = () => weatherIcon.src = fallbackIcon;
+
         weatherIcon.alt = data.weather[0].icon;
         const sunrise = new Date(data.sys.sunrise * 1000);
         const sunset = new Date(data.sys.sunset * 1000);
         const now = new Date();
-
         const isDaytime = now >= sunrise && now <= sunset;
         const backgroundImage = isDaytime ? './images/bg-img/sun-rise.jpg' : './images/bg-img/moon.jpg';
 
-        // Set background image
         document.body.style.backgroundImage = `url('${backgroundImage}')`;
         document.body.style.backgroundSize = 'cover';
-        forecastBtn.style.display = 'block';  //  button is visible
     } else {
         console.error('Incomplete weather data:', data);
         errorMessage.textContent = 'Weather data is missing or incomplete.';
@@ -95,7 +93,7 @@ function displayWeatherData(data) {
         loadingSpinner.style.display = 'none';
     }
 }
-// Function to fetch data from the weather API
+// Function to fetch weather data from the API
 function fetchData(endPoint, city) {
     fetch(`${BASE_URL}/${endPoint}?q=${city}&appid=${apiKey}&units=metric`)
         .then(response => {
@@ -105,79 +103,146 @@ function fetchData(endPoint, city) {
             return response.json();
         })
         .then(data => {
-            lastSearchedCity = city; // Update the last searched city
-            lastSearchedData = data; // Store the fetched data
+            lastSearchedCity = city;
+            lastSearchedData = data;
             displayWeatherData(data);
             loadingSpinner.style.display = 'none';
         })
         .catch((error) => {
             console.error('Error fetching weather data:', error);
             errorMessage.textContent = 'City not found';
+            forecastButton.style.display = "none";
             errorMessage.style.display = 'block';
             loadingSpinner.style.display = 'none';
+            document.body.style.backgroundImage = ''; // Remove background image
         });
 }
 // Event listener for the search button click
 searchButton.addEventListener('click', function (event) {
-    event.preventDefault(); // Prevents form from submitting and page from refreshing
+    event.preventDefault(); // Prevents form from submitting
     const city = searchInput.value.trim();
     weatherInfo.style.display = 'none';
     errorMessage.style.display = 'none';
     loadingSpinner.style.display = 'block';
-
     if (city === '') {
         errorMessage.textContent = 'Enter a city name.';
+        forecastButton.style.display = "none";
         errorMessage.style.display = 'block';
         loadingSpinner.style.display = 'none';
+        document.body.style.backgroundImage = ''; // Remove background image
         return;
     }
     const normalizedCity = city.toLowerCase();
-
     if (normalizedCity === lastSearchedCity.toLowerCase()) {
         weatherInfo.style.display = 'block';
         displayWeatherData(lastSearchedData);
         loadingSpinner.style.display = 'none';
-        console.log('City is already searched. Using cached data.');
     } else {
         loadingSpinner.style.display = 'block';
         fetchData('weather', city);
     }
-    searchInput.value = '';  // Clear the input field
+    searchInput.value = ''; // Clear the input field
 });
 searchInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         searchButton.click();
     }
 });
-// Function to fetch weather data by coordinates
+const forecastButton = document.querySelector('.forecast-button');
+const forecastModal = document.getElementById('forecastModal');
+const closeModal = document.querySelector('.close');
+const ctx = document.getElementById('forecastChart').getContext('2d');
+
+forecastButton.addEventListener('click', function () {
+    forecastModal.style.display = 'flex';
+    fetch(`${BASE_URL}/forecast?q=${lastSearchedCity}&appid=${apiKey}&units=metric`)
+        .then(response => response.json())
+        .then(data => {
+            const labels = [];
+            const temperatures = [];
+
+            // Fetch next 5 days data
+            const dailyData = data.list.filter((item, index) => index % 8 === 0);
+            dailyData.forEach(day => {
+                const date = new Date(day.dt * 1000);
+                labels.push(date.toLocaleDateString());
+                temperatures.push(day.main.temp);
+            });
+            // Show modal
+            forecastModal.style.display = 'flex';
+            // Destroy previous chart (if exists)
+            if (window.myChart) {
+                window.myChart.destroy();
+            }
+        })
+        .catch(error => console.error('Error fetching forecast data:', error));
+});
+// Close modal
+closeModal.addEventListener('click', () => {
+    forecastModal.style.display = 'none';
+});
+window.addEventListener("click", function (event) {
+    if (event.target === forecastModal) {
+        forecastModal.style.display = 'none';
+    }
+});
+function fetchForecast(city) {
+    fetch(`${BASE_URL}/forecast?q=${city}&appid=${apiKey}&units=metric`)
+        .then(response => response.json())
+        .then(data => {
+            const labels = [];
+            const temperatures = [];
+            // Next 5 days data
+            const dailyData = data.list.filter((item, index) => index % 8 === 0);
+            dailyData.forEach(day => {
+                const date = new Date(day.dt * 1000);
+                labels.push(date.toLocaleDateString());
+                temperatures.push(day.main.temp);
+            });
+            // Destroy previous chart if exists
+            if (window.myChart) {
+                window.myChart.destroy();
+            }
+            // Create new chart
+            window.myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Temperature in ${city} (°C)`,
+                        data: temperatures,
+                        borderColor: 'blue',
+                        backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: false }
+                    },
+                    
+                }
+            });
+        })
+        .catch(error => console.error('Error fetching forecast:', error));
+}
+let currentLocationCity = '';
 function fetchWeatherByCoordinates(lat, lon) {
     fetch(`${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Location not found');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            if (data.main && data.weather && data.weather[0]) {
-                displayWeatherData(data);
-            } else {
-                console.error('Weather data is missing or incomplete:', data);
-                errorMessage.textContent = 'Weather data is missing or incomplete.';
-                errorMessage.style.display = 'block';
-                loadingSpinner.style.display = 'none';
-                
-            }
+            console.log('Weather Data:', data); // Log entire data object
+            displayWeatherData(data);
+            lastSearchedCity = data.name; // Store current location city
+            currentLocationCity = data.name;
         })
         .catch(error => {
             console.error('Error fetching weather data by coordinates:', error);
-            errorMessage.textContent = 'Unable to fetch weather data. Please try again later.';
+            errorMessage.textContent = 'Unable to fetch weather data.';
             errorMessage.style.display = 'block';
-            loadingSpinner.style.display = 'none';
-           
         });
 }
-// Function to get coordinates using the browser's geolocation API
 function getCoordinates() {
     return new Promise((resolve, reject) => {
         if (navigator.geolocation) {
@@ -189,6 +254,11 @@ function getCoordinates() {
                 },
                 error => {
                     reject(new Error('Unable to retrieve your location. Please try again.'));
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
                 }
             );
         } else {
@@ -196,100 +266,37 @@ function getCoordinates() {
         }
     });
 }
-// Function to fetch weather data for the current location
 function getCurrentLocationWeather() {
     loadingSpinner.style.display = 'block';
     getCoordinates()
         .then(({ lat, lon }) => {
-            fetchWeatherByCoordinates(lat, lon);
+            fetchWeatherByCoordinates(lat, lon);  // Fetch weather for the coordinates
         })
         .catch(error => {
+            console.error(error);
             errorMessage.textContent = error.message;
             errorMessage.style.display = 'block';
+            loadingSpinner.style.display = 'none';
         })
         .finally(() => {
             loadingSpinner.style.display = 'none';
         });
 }
+forecastButton.addEventListener("click", function () {
+    const cityToUse = lastSearchedCity || currentLocationCity; 
+    if (!cityToUse) {
+        alert("Weather data not available. Please allow location or search for a city.");
+        return;
+    }
+    fetchForecast(cityToUse);
+    forecastModal.style.display = 'flex';
+});
+
+
 window.onload = function () {
     getCurrentLocationWeather();
 };
 
-//========   for-Forecast   ==================
-const forecastGraphContainer = document.querySelector('.forecast-graph-container');
-const forecastChartCanvas = document.getElementById('forecast-chart').getContext('2d');
 
-// Function to fetch 5-day forecast data
-function fetch5DayForecast(city) {
-    fetch(`${BASE_URL}/forecast?q=${city}&appid=${apiKey}&units=metric`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Forecast data not found');
-            }
-            return response.json();
-        })
-        .then(data => {
-            const dates = [];
-            const temperatures = [];
-            data.list.forEach((entry) => {
-                const date = new Date(entry.dt * 1000);
-                if (date.getHours() === 12) { 
-                    dates.push(`${date.getDate()}/${date.getMonth() + 1}`);
-                    temperatures.push(Math.round(entry.main.temp));
-                }
-            });
-            plotForecastChart(dates, temperatures);
-
-        })
-        .catch((error) => {
-            console.error('Error fetching forecast data:', error);
-        });
-}
-function plotForecastChart(dates, temperatures) {
-    forecastGraphContainer.style.display = 'block';
-    new Chart(forecastChartCanvas, {
-        type: 'line', // Line chart
-        data: {
-            labels: dates,
-            datasets: [{
-                label: 'Temperature (°C)',
-                data: temperatures,
-                borderColor: '#FF5733',
-                backgroundColor: 'rgba(255, 87, 51, 0.3)',
-                fill: true,
-                lineTension: 0.4,
-                pointRadius: 5,
-                pointBackgroundColor: '#FF5733',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    ticks: {
-                        stepSize: 5,
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date'
-                    }
-                }
-            }
-        }
-    });
-}
-
-// Event listener for the forecast button
-forecastBtn.addEventListener('click', () => {
-    const city = searchInput.value.trim(); 
-    if (city !== '') {
-        fetch5DayForecast(city);
-    } 
-});
 
 
